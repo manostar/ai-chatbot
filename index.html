@@ -2,22 +2,22 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>AIチャット</title>
+<title>日本パワード工業 AIチャット</title>
 
 <style>
 
 body{
-margin:0;
 font-family:sans-serif;
 background:#f5f5f5;
+margin:0;
 }
 
 #chat{
 max-width:700px;
 margin:40px auto;
 background:white;
-border-radius:12px;
-box-shadow:0 0 15px rgba(0,0,0,0.1);
+border-radius:10px;
+box-shadow:0 0 10px rgba(0,0,0,0.1);
 display:flex;
 flex-direction:column;
 height:80vh;
@@ -44,38 +44,30 @@ margin-left:auto;
 
 .ai{
 background:#e9e9eb;
-color:black;
 }
 
 #inputArea{
 display:flex;
-border-top:1px solid #ddd;
 padding:10px;
+border-top:1px solid #ddd;
 }
 
 #input{
 flex:1;
 padding:10px;
 font-size:16px;
-border:1px solid #ccc;
-border-radius:6px;
 }
 
 button{
-margin-left:10px;
-padding:10px 18px;
+padding:10px 20px;
 background:#007aff;
-border:none;
 color:white;
-border-radius:6px;
+border:none;
 cursor:pointer;
 }
 
-button:hover{
-background:#0062cc;
-}
-
 </style>
+
 </head>
 
 <body>
@@ -95,61 +87,50 @@ background:#0062cc;
 
 const API_KEY = "AIzaSyCMRzVTyS59IBRDJbPAu4fmAocea-OmMBA";
 
-const DAILY_LIMIT = 30;
+const COMPANY_DATA = `
+あなたは日本パワード工業株式会社のサポートAIです。
 
-let history = JSON.parse(localStorage.getItem("history") || "[]");
-let usage = JSON.parse(localStorage.getItem("usage") || "{}");
+会社情報
+日本パワード工業株式会社は
+産業機械や電気機器などの製造・技術サービスを提供する企業です。
 
-const today = new Date().toISOString().slice(0,10);
+主な事業
+・産業機械
+・電気機器
+・技術サービス
+・製造支援
 
-if(!usage[today]) usage[today] = 0;
+会社の問い合わせや製品に関する質問には丁寧に回答してください。
 
-function renderHistory(){
-history.forEach(m=>addMessage(m.role,m.text,false));
-}
-
-renderHistory();
-
-document.getElementById("input").addEventListener("keypress",function(e){
-if(e.key==="Enter"){
-send();
-}
-});
+会社と関係ない質問には
+「申し訳ありません。このAIは日本パワード工業に関する質問専用です。」
+と答えてください。
+`;
 
 async function send(){
 
 const input = document.getElementById("input");
-const text = input.value.trim();
+const text = input.value;
 
 if(!text) return;
 
-if(usage[today] >= DAILY_LIMIT){
-addMessage("ai","本日の無料チャット回数に達しました。");
-return;
-}
-
 addMessage("user",text);
-
-history.push({role:"user",text:text});
 
 input.value="";
 
-const contents = history.map(m=>({
-role:m.role==="user"?"user":"model",
-parts:[{text:m.text}]
-}));
+const prompt = COMPANY_DATA + "\n\nユーザー質問：" + text;
 
 const res = await fetch(
 "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key="+API_KEY,
 {
 method:"POST",
-headers:{ "Content-Type":"application/json" },
+headers:{ "Content-Type":"application/json"},
 body:JSON.stringify({
-contents:contents,
-generationConfig:{
-temperature:0.6,
-maxOutputTokens:500
+contents:[
+{
+parts:[{text:prompt}]
 }
+]
 })
 });
 
@@ -159,22 +140,15 @@ const reply = data.candidates[0].content.parts[0].text;
 
 addMessage("ai",reply);
 
-history.push({role:"ai",text:reply});
-
-usage[today]++;
-
-localStorage.setItem("history",JSON.stringify(history));
-localStorage.setItem("usage",JSON.stringify(usage));
-
 }
 
-function addMessage(role,text,save=true){
+function addMessage(role,text){
 
 const div = document.createElement("div");
 
-div.className = "message "+role;
+div.className="message "+role;
 
-div.textContent = text;
+div.textContent=text;
 
 document.getElementById("messages").appendChild(div);
 
@@ -182,6 +156,12 @@ document.getElementById("messages").scrollTop =
 document.getElementById("messages").scrollHeight;
 
 }
+
+document.getElementById("input").addEventListener("keypress",function(e){
+if(e.key==="Enter"){
+send();
+}
+});
 
 </script>
 
