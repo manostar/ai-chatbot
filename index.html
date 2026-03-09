@@ -85,14 +85,13 @@ cursor:pointer;
 
 <script>
 
-const API_KEY = "AIzaSyCMRzVTyS59IBRDJbPAu4fmAocea-OmMBA";
+const API_KEY = "ここにGeminiAPIキーを貼る";
 
 const COMPANY_DATA = `
 あなたは日本パワード工業株式会社のサポートAIです。
 
 会社情報
-日本パワード工業株式会社は
-産業機械や電気機器などの製造・技術サービスを提供する企業です。
+日本パワード工業株式会社は産業機械や電気機器などの製造・技術サービスを提供する企業です。
 
 主な事業
 ・産業機械
@@ -120,11 +119,15 @@ input.value="";
 
 const prompt = COMPANY_DATA + "\n\nユーザー質問：" + text;
 
+try{
+
 const res = await fetch(
-"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key="+API_KEY,
+"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key="+API_KEY,
 {
 method:"POST",
-headers:{ "Content-Type":"application/json"},
+headers:{
+"Content-Type":"application/json"
+},
 body:JSON.stringify({
 contents:[
 {
@@ -136,9 +139,28 @@ parts:[{text:prompt}]
 
 const data = await res.json();
 
+if(data.error){
+addMessage("ai","APIエラー: " + data.error.message);
+console.log(data);
+return;
+}
+
+if(!data.candidates){
+addMessage("ai","AIの回答を取得できませんでした");
+console.log(data);
+return;
+}
+
 const reply = data.candidates[0].content.parts[0].text;
 
 addMessage("ai",reply);
+
+}catch(error){
+
+addMessage("ai","通信エラーが発生しました");
+console.log(error);
+
+}
 
 }
 
