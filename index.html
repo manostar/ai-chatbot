@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>AIチャット</title>
+
+<style>
+
+body{
+margin:0;
+font-family:sans-serif;
+background:#f5f5f5;
+}
+
+#chat{
+max-width:700px;
+margin:40px auto;
+background:white;
+border-radius:12px;
+box-shadow:0 0 15px rgba(0,0,0,0.1);
+display:flex;
+flex-direction:column;
+height:80vh;
+}
+
+#messages{
+flex:1;
+overflow:auto;
+padding:20px;
+}
+
+.message{
+margin-bottom:15px;
+padding:10px 14px;
+border-radius:10px;
+max-width:80%;
+}
+
+.user{
+background:#007aff;
+color:white;
+margin-left:auto;
+}
+
+.ai{
+background:#e9e9eb;
+color:black;
+}
+
+#inputArea{
+display:flex;
+border-top:1px solid #ddd;
+padding:10px;
+}
+
+#input{
+flex:1;
+padding:10px;
+font-size:16px;
+border:1px solid #ccc;
+border-radius:6px;
+}
+
+button{
+margin-left:10px;
+padding:10px 18px;
+background:#007aff;
+border:none;
+color:white;
+border-radius:6px;
+cursor:pointer;
+}
+
+button:hover{
+background:#0062cc;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="chat">
+
+<div id="messages"></div>
+
+<div id="inputArea">
+<input id="input" placeholder="質問を入力">
+<button onclick="send()">送信</button>
+</div>
+
+</div>
+
+<script>
+
+const API_KEY = "ここにGeminiAPIキー";
+
+const DAILY_LIMIT = 30;
+
+let history = JSON.parse(localStorage.getItem("history") || "[]");
+let usage = JSON.parse(localStorage.getItem("usage") || "{}");
+
+const today = new Date().toISOString().slice(0,10);
+
+if(!usage[today]) usage[today] = 0;
+
+function renderHistory(){
+history.forEach(m=>addMessage(m.role,m.text,false));
+}
+
+renderHistory();
+
+document.getElementById("input").addEventListener("keypress",function(e){
+if(e.key==="Enter"){
+send();
+}
+});
+
+async function send(){
+
+const input = document.getElementById("input");
+const text = input.value.trim();
+
+if(!text) return;
+
+if(usage[today] >= DAILY_LIMIT){
+addMessage("ai","本日の無料チャット回数に達しました。");
+return;
+}
+
+addMessage("user",text);
+
+history.push({role:"user",text:text});
+
+input.value="";
+
+const contents = history.map(m=>({
+role:m.role==="user"?"user":"model",
+parts:[{text:m.text}]
+}));
+
+const res = await fetch(
+"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key="+API_KEY,
+{
+method:"POST",
+headers:{ "Content-Type":"application/json" },
+body:JSON.stringify({
+contents:contents,
+generationConfig:{
+temperature:0.6,
+maxOutputTokens:500
+}
+})
+});
+
+const data = await res.json();
+
+const reply = data.candidates[0].content.parts[0].text;
+
+addMessage("ai",reply);
+
+history.push({role:"ai",text:reply});
+
+usage[today]++;
+
+localStorage.setItem("history",JSON.stringify(history));
+localStorage.setItem("usage",JSON.stringify(usage));
+
+}
+
+function addMessage(role,text,save=true){
+
+const div = document.createElement("div");
+
+div.className = "message "+role;
+
+div.textContent = text;
+
+document.getElementById("messages").appendChild(div);
+
+document.getElementById("messages").scrollTop =
+document.getElementById("messages").scrollHeight;
+
+}
+
+</script>
+
+</body>
+</html>
