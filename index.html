@@ -1,33 +1,34 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
-<title>会社AI</title>
+<meta charset="UTF-8">
+<title>会社専用AI</title>
 </head>
 
 <body>
 
-<h2>会社専用AI</h2>
+<h1>会社専用AI</h1>
 
-<input id="q" style="width:300px" placeholder="質問してください">
+<input id="q" size="40">
 <button onclick="ask()">質問</button>
 
-<pre id="a"></pre>
+<p id="answer"></p>
 
 <script>
 
 async function ask(){
 
-const q = document.getElementById("q").value
+  const q = document.getElementById("q").value
 
-const res = await fetch(
-"https://ai-chatbot.y-takada-9e1.workers.dev/?q="
-+encodeURIComponent(q)
-)
+  document.getElementById("answer").innerText="AI考え中..."
 
-const data = await res.json()
+  const res = await fetch(
+    "https://ai-chatbot.y-takada-9e1.workers.dev/?q="+encodeURIComponent(q)
+  )
 
-document.getElementById("a").innerText = data.reply
+  const data = await res.json()
+
+  document.getElementById("answer").innerText=data.reply
 
 }
 
