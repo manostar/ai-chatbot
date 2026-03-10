@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>会社AI</title>
+<title>日本パワード工業AI</title>
 
 <style>
 
@@ -22,10 +22,10 @@ height:60px;
 border-radius:50%;
 background:#007aff;
 color:white;
-font-size:28px;
+font-size:26px;
 border:none;
 cursor:pointer;
-box-shadow:0 4px 10px rgba(0,0,0,0.2);
+box-shadow:0 4px 12px rgba(0,0,0,0.25);
 }
 
 /* チャットウィンドウ */
@@ -34,11 +34,11 @@ box-shadow:0 4px 10px rgba(0,0,0,0.2);
 position:fixed;
 bottom:90px;
 right:20px;
-width:350px;
-height:500px;
+width:360px;
+height:520px;
 background:white;
-border-radius:10px;
-box-shadow:0 0 15px rgba(0,0,0,0.2);
+border-radius:12px;
+box-shadow:0 0 20px rgba(0,0,0,0.25);
 display:none;
 flex-direction:column;
 overflow:hidden;
@@ -49,7 +49,7 @@ overflow:hidden;
 #chatHeader{
 background:#007aff;
 color:white;
-padding:10px;
+padding:12px;
 font-weight:bold;
 }
 
@@ -57,16 +57,17 @@ font-weight:bold;
 
 #messages{
 flex:1;
-padding:10px;
+padding:12px;
 overflow:auto;
-background:#f5f5f5;
+background:#f4f6f8;
 }
 
 .message{
 margin-bottom:10px;
 padding:8px 12px;
-border-radius:8px;
+border-radius:10px;
 max-width:80%;
+font-size:14px;
 }
 
 .user{
@@ -76,7 +77,25 @@ margin-left:auto;
 }
 
 .ai{
-background:#e0e0e0;
+background:#e3e6ea;
+}
+
+/* FAQ */
+
+#faq{
+padding:8px;
+border-top:1px solid #ddd;
+background:white;
+}
+
+.faqBtn{
+margin:3px;
+padding:6px 10px;
+border-radius:6px;
+border:1px solid #ddd;
+background:#f7f7f7;
+cursor:pointer;
+font-size:12px;
 }
 
 /* 入力 */
@@ -90,6 +109,7 @@ border-top:1px solid #ddd;
 flex:1;
 padding:10px;
 border:none;
+font-size:14px;
 }
 
 #send{
@@ -100,16 +120,23 @@ padding:10px 15px;
 cursor:pointer;
 }
 
+.contactBtn{
+display:block;
+text-align:center;
+padding:10px;
+background:#f7f7f7;
+border-top:1px solid #ddd;
+text-decoration:none;
+color:#333;
+font-size:13px;
+}
+
 </style>
 </head>
 
 <body>
 
-<!-- チャットボタン -->
-
 <button id="chatButton">💬</button>
-
-<!-- チャットウィンドウ -->
 
 <div id="chatWindow">
 
@@ -119,10 +146,20 @@ cursor:pointer;
 
 <div id="messages"></div>
 
+<div id="faq">
+<button class="faqBtn" onclick="faq('会社概要を教えて')">会社概要</button>
+<button class="faqBtn" onclick="faq('どんな製品がありますか')">製品</button>
+<button class="faqBtn" onclick="faq('高粘度流体とは')">高粘度流体</button>
+</div>
+
 <div id="inputArea">
 <input id="input" placeholder="質問してください">
 <button id="send">送信</button>
 </div>
+
+<a class="contactBtn" href="https://powered.co.jp/contact/" target="_blank">
+お問い合わせはこちら
+</a>
 
 </div>
 
@@ -136,6 +173,12 @@ const win=document.getElementById("chatWindow")
 btn.onclick=()=>{
 win.style.display=
 win.style.display==="flex"?"none":"flex"
+
+if(win.dataset.opened!=="1"){
+addMessage("ai","こんにちは。日本パワード工業AIです。会社情報や製品についてお答えします。")
+win.dataset.opened="1"
+}
+
 }
 
 document.getElementById("send").onclick=send
@@ -143,6 +186,11 @@ document.getElementById("send").onclick=send
 document.getElementById("input").addEventListener("keypress",e=>{
 if(e.key==="Enter") send()
 })
+
+function faq(text){
+document.getElementById("input").value=text
+send()
+}
 
 async function send(){
 
