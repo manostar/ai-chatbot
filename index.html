@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>日本パワード工業AIチャット</title>
+<title>日本パワード工業AI</title>
 
 <style>
 
@@ -141,7 +141,7 @@ font-size:13px;
 <div id="chatWindow">
 
 <div id="chatHeader">
-日本パワード工業AIチャット
+日本パワード工業AI
 </div>
 
 <div id="messages"></div>
@@ -203,11 +203,32 @@ addMessage("user",text)
 
 input.value=""
 
-const res=await fetch(API+encodeURIComponent(text))
+/* AI回答中表示 */
 
+const loading = document.createElement("div")
+loading.className="message ai"
+loading.id="loading"
+loading.textContent="AI回答中..."
+
+document.getElementById("messages").appendChild(loading)
+document.getElementById("messages").scrollTop=999999
+
+try{
+
+const res=await fetch(API+encodeURIComponent(text))
 const data=await res.json()
 
+document.getElementById("loading").remove()
+
 addMessage("ai",data.reply)
+
+}catch(e){
+
+document.getElementById("loading").remove()
+
+addMessage("ai","AIの応答が遅れています。もう一度お試しください。")
+
+}
 
 }
 
